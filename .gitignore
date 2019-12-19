@@ -1,0 +1,9 @@
+.history/
+.vscode/
+
+backup/
+tmp/
+backup-db-to-dropbox
+build/
+
+config.yaml
