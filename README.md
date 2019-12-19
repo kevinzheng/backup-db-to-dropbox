@@ -7,7 +7,7 @@
 * Specify destination folder
 
 ## Usage
-1. Put the compiled application file `backup-db-to-dropbox` in `/usr/local/bin/`.
+1. Put the [compiled application file `backup-db-to-dropbox`](https://github.com/kevinzheng/backup-db-to-dropbox/releases) in `/usr/local/bin/`.
 2. `mkdir` at `/etc/backup-db-to-dropbox`.
 3. `cp` `config.yaml.example` to `/etc/backup-db-to-dropbox/config.yaml`.
 4. Edit `/etc/backup-db-to-dropbox/config.yaml` and set dropbox `token`, destination `folder`, and data source informations.

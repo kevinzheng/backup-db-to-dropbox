@@ -36,7 +36,7 @@ func init() {
 		LogLevel: logLevel,
 	}
 
-	// "/"" is needed at start
+	// '/' is needed at start
 	if !strings.HasPrefix(Config.Dropbox.Folder, "/") {
 		folder = "/" + Config.Dropbox.Folder
 	} else {
