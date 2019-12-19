@@ -19,6 +19,31 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var (
+	config dropbox.Config
+	folder string
+)
+
+func init() {
+	var logLevel dropbox.LogLevel
+	if Config.Dropbox.Log {
+		logLevel = dropbox.LogInfo
+	} else {
+		logLevel = dropbox.LogOff
+	}
+	config = dropbox.Config{
+		Token:    Config.Dropbox.Token,
+		LogLevel: logLevel,
+	}
+
+	// "/"" is needed at start
+	if !strings.HasPrefix(Config.Dropbox.Folder, "/") {
+		folder = "/" + Config.Dropbox.Folder
+	} else {
+		folder = Config.Dropbox.Folder
+	}
+}
+
 func dump() (string, error) {
 	app := "mysqldump"
 
@@ -34,7 +59,7 @@ func dump() (string, error) {
 	}
 
 	t := time.Now()
-	timestamp := t.Format("20060102150405")
+	timestamp := t.Format(Config.Backup.FilenameTimeForamt)
 	var filename = fmt.Sprintf("%s-%s.sql", strings.Join(Config.Source.Dbs, "-"), timestamp)
 
 	p := filepath.Join(dir, filename)
@@ -89,17 +114,6 @@ func compress(path string) (string, error) {
 }
 
 func upload(tarFile string) error {
-	var logLevel dropbox.LogLevel
-	if Config.Dropbox.Log {
-		logLevel = dropbox.LogInfo
-	} else {
-		logLevel = dropbox.LogOff
-	}
-	config := dropbox.Config{
-		Token:    Config.Dropbox.Token,
-		LogLevel: logLevel,
-	}
-
 	dbx := files.New(config)
 
 	file, err := os.Open(tarFile)
@@ -107,8 +121,6 @@ func upload(tarFile string) error {
 		return err
 	}
 	defer file.Close()
-
-	folder := "database-backup"
 
 	listFolderResult, err := dbx.ListFolder(&files.ListFolderArg{
 		Path: "", // Specify the root folder as an empty string rather than as "/".
@@ -119,7 +131,7 @@ func upload(tarFile string) error {
 
 	folderExisted := funk.Find(listFolderResult.Entries, func(v files.IsMetadata) bool {
 		metadata := v.(*files.FolderMetadata)
-		return metadata.Name == folder
+		return metadata.Name == filepath.Base(folder)
 	})
 
 	if folderExisted == nil {
@@ -137,7 +149,7 @@ func upload(tarFile string) error {
 	}
 	defer f.Close()
 
-	targetPath := filepath.Join("/", folder, filepath.Base(tarFile))
+	targetPath := filepath.Join(folder, filepath.Base(tarFile))
 
 	var r io.Reader = f
 	_, err = dbx.Upload(&files.CommitInfo{
@@ -161,6 +173,32 @@ func clean(folder string) error {
 	return os.RemoveAll(folder)
 }
 
+func removeOldBackup() error {
+	dbx := files.New(config)
+
+	listFolderResult, err := dbx.ListFolder(&files.ListFolderArg{
+		Path: folder,
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, entity := range listFolderResult.Entries {
+		metadata := entity.(*files.FileMetadata)
+		d := time.Duration(time.Duration(Config.Backup.KeepDays) * 24 * time.Hour)
+		if time.Time.Before(metadata.ClientModified, time.Now().Truncate(d)) {
+			_, err := dbx.DeleteV2(&files.DeleteArg{
+				Path: metadata.PathLower,
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 func main() {
 	app := &cli.App{
 		Name:  "backup-db-to-dropbox",
@@ -179,6 +217,10 @@ func main() {
 				panic(err)
 			}
 			err = clean(filepath.Dir(p))
+			if err != nil {
+				panic(err)
+			}
+			err = removeOldBackup()
 			if err != nil {
 				panic(err)
 			}

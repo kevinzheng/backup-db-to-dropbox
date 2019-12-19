@@ -1,9 +1,12 @@
 backup:
   tmpDir: tmp
+  filenameTimeForamt: 2006-01-02T15:04:05+08:00
+  keepDays: 30
 
 dropbox:
   token: 
-  log: false
+  log: true
+  folder: /database-backup
 
 source:
   host: localhost
