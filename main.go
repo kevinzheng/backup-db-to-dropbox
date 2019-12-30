@@ -65,10 +65,12 @@ func dumpMySQL() (string, error) {
 	p := filepath.Join(dir, filename)
 
 	var args []string
-	args = append(args, "-u"+Config.Source.Username)
+	args = append(args, "--host="+Config.Source.Host)
+	args = append(args, "--port="+Config.Source.Port)
+	args = append(args, "--user="+Config.Source.Username)
 
 	if len(Config.Source.Password) > 0 {
-		args = append(args, "-p"+Config.Source.Password)
+		args = append(args, "--password="+Config.Source.Password)
 	}
 
 	args = append(args, "--databases")
@@ -115,7 +117,9 @@ func dumpPostgres() (string, error) {
 	p := filepath.Join(dir, filename)
 
 	var args []string
-	args = append(args, "-U", Config.Source.Username)
+	args = append(args, "--host="+Config.Source.Host)
+	args = append(args, "--port="+Config.Source.Port)
+	args = append(args, "--username="+Config.Source.Username)
 
 	args = append(args, "-d")
 	args = append(args, Config.Source.Dbs...)
