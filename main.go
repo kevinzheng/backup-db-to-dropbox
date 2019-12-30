@@ -44,7 +44,7 @@ func init() {
 	}
 }
 
-func dump() (string, error) {
+func dumpMySQL() (string, error) {
 	app := "mysqldump"
 
 	u, err := uuid.NewV4()
@@ -75,6 +75,57 @@ func dump() (string, error) {
 	args = append(args, Config.Source.Dbs...)
 
 	cmd := exec.Command(app, args...)
+
+	outfile, err := os.Create(p)
+	if err != nil {
+		return "", err
+	}
+	defer outfile.Close()
+	cmd.Stdout = outfile
+
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	err = cmd.Run()
+	if err != nil {
+		return "", fmt.Errorf("Error: %v", stderr.String())
+	}
+
+	return p, nil
+}
+
+func dumpPostgres() (string, error) {
+	app := "pg_dump"
+
+	u, err := uuid.NewV4()
+	if err != nil {
+		return "", err
+	}
+
+	dir := filepath.Join(Config.Backup.TmpDir, u.String())
+	err = os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		return "", err
+	}
+
+	t := time.Now()
+	timestamp := t.Format(Config.Backup.FilenameTimeForamt)
+	var filename = fmt.Sprintf("%s-%s.sql", strings.Join(Config.Source.Dbs, "-"), timestamp)
+
+	p := filepath.Join(dir, filename)
+
+	var args []string
+	args = append(args, "-U", Config.Source.Username)
+
+	args = append(args, "-d")
+	args = append(args, Config.Source.Dbs...)
+
+	cmd := exec.Command(app, args...)
+
+	if len(Config.Source.Password) > 0 {
+		cmd.Env = os.Environ()
+		cmd.Env = append(cmd.Env, "PGPASSWORD="+Config.Source.Password)
+	}
 
 	outfile, err := os.Create(p)
 	if err != nil {
@@ -204,9 +255,18 @@ func main() {
 		Name:  "backup-db-to-dropbox",
 		Usage: "./backup-db-to-dropbox",
 		Action: func(c *cli.Context) error {
-			p, err := dump()
-			if err != nil {
-				panic(err)
+			var p string
+			var err error
+			if Config.Source.Type == "mysql" {
+				p, err = dumpMySQL()
+				if err != nil {
+					panic(err)
+				}
+			} else if Config.Source.Type == "postgres" {
+				p, err = dumpPostgres()
+				if err != nil {
+					panic(err)
+				}
 			}
 			tarFile, err := compress(p)
 			if err != nil {

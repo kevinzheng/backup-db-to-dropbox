@@ -21,6 +21,7 @@ var (
 		}
 
 		Source struct {
+			Type     string   `yaml:"type"`
 			Host     string   `yaml:"host"`
 			Port     string   `yaml:"port"`
 			Username string   `yaml:"username"`

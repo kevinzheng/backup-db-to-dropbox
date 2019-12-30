@@ -9,6 +9,7 @@ dropbox:
   folder: /database-backup
 
 source:
+  type: postgres # postgres/mysql
   host: localhost
   port: 3306
   username: root
