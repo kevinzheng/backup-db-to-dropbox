@@ -3,8 +3,9 @@
 
 backup/
 tmp/
-backup-db-to-dropbox
+backupdbtodropbox
 target/
 
 config.yaml
 .env
+.env.repository

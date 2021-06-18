@@ -1,18 +1,15 @@
-module kingcity.app/backup-db-to-dropbox
+module springup.xyz/backupdbtodropbox
 
 go 1.13
 
 require (
-	github.com/dropbox/dropbox-sdk-go-unofficial v5.4.0+incompatible
-	github.com/go-sql-driver/mysql v1.4.1
-	github.com/google/uuid v1.1.1
+	github.com/dropbox/dropbox-sdk-go-unofficial/v6 v6.0.1
+	github.com/fatih/color v1.12.0
+	github.com/go-co-op/gocron v1.6.2
+	github.com/kr/text v0.2.0 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
-	github.com/pkg/errors v0.8.1
-	github.com/satori/go.uuid v1.2.0
-	github.com/spf13/viper v1.6.1
-	github.com/thoas/go-funk v0.5.0
-	github.com/twinj/uuid v1.0.0
-	github.com/urfave/cli/v2 v2.0.0
-	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 // indirect
-	golang.org/x/oauth2 v0.0.0-20191202225959-858c2ad4c8b6 // indirect
+	github.com/spf13/cobra v1.1.3
+	github.com/spf13/viper v1.8.0
+	github.com/thoas/go-funk v0.8.0
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )

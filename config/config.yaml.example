@@ -2,6 +2,8 @@ backup:
   tmpDir: tmp
   filenameTimeForamt: 2006-01-02T15:04:05+08:00
   keepDays: 30
+  prefix: "test-"
+  cron: "*/1 * * * *" # every minute
 
 dropbox:
   token: 
@@ -9,6 +11,7 @@ dropbox:
   folder: /database-backup
 
 source:
+  dockerContainerId: ""
   type: postgres # postgres/mysql
   host: localhost
   port: 3306

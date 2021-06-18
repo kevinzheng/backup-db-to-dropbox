@@ -2,6 +2,10 @@
 
 set -e
 
-source .env
+source .env.repository
 
-docker run --rm --net=host -v ${PWD}/config.yaml:/etc/backup-db-to-dropbox/config.yaml ${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:dev
+SERVICE_NAME=$(basename "$PWD")
+
+DOCKER_IMAGE_TAG=gitlab.springup.xyz:5050/autotouch/${SERVICE_NAME}:latest
+
+docker run --rm --network=host -v ${PWD}/config/config.yaml:/app/config.yaml ${DOCKER_IMAGE_TAG}
